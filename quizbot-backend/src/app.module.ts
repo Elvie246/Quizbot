@@ -6,6 +6,7 @@ import { PrismaModule } from './infrastructure/prisma/prisma.module';
 import { UsersModule } from './infrastructure/users/users.module';
 import { AuthModule } from './infrastructure/auth/auth.module';
 import { CreditsModule } from './infrastructure/credits/credits.module';
+import { QuizzesModule } from './infrastructure/quizzes/quizzes.module';
 
 /**
  * AppModule is the root module of the application.
@@ -20,6 +21,7 @@ import { CreditsModule } from './infrastructure/credits/credits.module';
     UsersModule,
     AuthModule,
     CreditsModule,
+    QuizzesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
