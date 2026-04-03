@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { ICreditsRepository } from './credits.repository.interface';
 
 /**
@@ -23,7 +23,7 @@ export class CreditsService {
   async deductCredits(userId: number, amount: number) {
     const currentBalance = await this.getBalance(userId);
     if (currentBalance < amount) {
-      throw new BadRequestException('Insufficient credits');
+      throw new ForbiddenException('Insufficient credits to perform this action');
     }
 
     const newBalance = currentBalance - amount;
