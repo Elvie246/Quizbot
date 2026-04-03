@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IUserRepository } from './user.repository.interface';
+import type { IUserRepository } from './user.repository.interface';
 import { User } from '@prisma/client';
 
 /**
