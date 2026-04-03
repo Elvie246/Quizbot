@@ -22,15 +22,44 @@ function Login({ onLogin }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  // Handles form submission
-  const handleSubmit = (e) => {
+
+  /**
+   * Handles form submission and authenticates user via API.
+   * On success, stores JWT token in localStorage and calls onLogin callback.
+   * On failure, displays error message.
+   * @param {Event} e - Form submit event
+   */
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Replace with real authentication API call
-    if (email && password) {
-      setError('');
-      onLogin && onLogin({ email });
-    } else {
+    if (!email || !password) {
       setError('Please enter both email and password.');
+      return;
+    }
+    try {
+      // Replace the URL below with your backend login endpoint
+      const response = await fetch('http://localhost:3001/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      if (!response.ok) {
+        // Handles HTTP errors (e.g. 401 Unauthorized)
+        const data = await response.json();
+        setError(data.message || 'Login failed.');
+        return;
+      }
+      const data = await response.json();
+      // Expects { token: 'JWT_TOKEN', user: { ... } }
+      if (data.token) {
+        // Store JWT token in localStorage for future API calls
+        localStorage.setItem('jwtToken', data.token);
+        setError('');
+        onLogin && onLogin(data.user);
+      } else {
+        setError('Invalid response from server.');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
     }
   };
 
