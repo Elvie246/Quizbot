@@ -26,6 +26,7 @@ import QuizbotFeatures from './QuizbotFeatures';
 import Footer from './Footer';
 import CreditsBar from './CreditsBar';
 import QuizDisplay from './QuizDisplay';
+import ContactUs from './ContactUs';
 
 /**
  * Main App component with public homepage and login/register dialogs.
@@ -37,6 +38,9 @@ function App() {
 
   // State for current quiz display
   const [currentQuiz, setCurrentQuiz] = useState(null);
+  
+  // State for contact page display
+  const [showContact, setShowContact] = useState(false);
 
   // State to control dialog visibility and mode (login/register)
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -141,7 +145,7 @@ function App() {
       </Typography>
       <Divider />
       <List>
-        <ListItem button onClick={() => { setShowNotes(false); setCurrentQuiz(null); }}>
+        <ListItem button onClick={() => { setShowNotes(false); setCurrentQuiz(null); setShowContact(false); }}>
           <ListItemIcon><HomeIcon /></ListItemIcon>
           <ListItemText primary={language === 'EN' ? 'Home' : 'Accueil'} />
         </ListItem>
@@ -214,13 +218,15 @@ function App() {
 
       {/* Main Content */}
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 8, width: '100%', pb: 10 }}>
-        <Typography variant="h3" gutterBottom align="center">
-          {isLoggedIn 
-            ? (language === 'EN' ? 'What Do You Want to Study Today?' : 'Que souhaitez-vous étudier aujourd\'hui ?')
-            : (language === 'EN' ? 'Welcome to Quizbot!' : 'Bienvenue sur Quizbot !')}
-        </Typography>
+        {!showContact && !currentQuiz && (
+          <Typography variant="h3" gutterBottom align="center">
+            {isLoggedIn 
+              ? (language === 'EN' ? 'What Do You Want to Study Today?' : 'Que souhaitez-vous étudier aujourd\'hui ?')
+              : (language === 'EN' ? 'Welcome to Quizbot!' : 'Bienvenue sur Quizbot !')}
+          </Typography>
+        )}
         
-        {!isLoggedIn && (
+        {!isLoggedIn && !showContact && !currentQuiz && (
           <Typography variant="body1" sx={{ maxWidth: 600, textAlign: 'center', mb: 2 }}>
             {language === 'EN' 
               ? 'Create, import, and play quizzes with ease. Please log in to access your dashboard and quiz history.' 
@@ -228,11 +234,11 @@ function App() {
           </Typography>
         )}
 
-        {/* Show Credits Bar only if NOT logged in */}
-        {!isLoggedIn && <CreditsBar onLoginClick={() => { setDialogMode('login'); setDialogOpen(true); }} />}
+        {/* Show Credits Bar only if NOT logged in and not on other pages */}
+        {!isLoggedIn && !showContact && !currentQuiz && <CreditsBar onLoginClick={() => { setDialogMode('login'); setDialogOpen(true); }} />}
 
         {/* Notepad (conditional) */}
-        {isLoggedIn && showNotes && (
+        {isLoggedIn && showNotes && !showContact && !currentQuiz && (
           <Box sx={{ width: '100%', maxWidth: 600, mb: 4, p: 2 }}>
             <Typography variant="h6">{language === 'EN' ? 'My Study Notes' : 'Mes notes d\'étude'}</Typography>
             <TextField
@@ -248,7 +254,9 @@ function App() {
           </Box>
         )}
 
-        {!currentQuiz ? (
+        {showContact ? (
+          <ContactUs onBack={() => setShowContact(false)} />
+        ) : !currentQuiz ? (
           <>
             <Grid container spacing={2} justifyContent="center" sx={{ px: 2 }}>
               <Grid item>
@@ -271,7 +279,7 @@ function App() {
         )}
       </Box>
 
-      <Footer />
+      <Footer onContactClick={() => { setShowContact(true); setCurrentQuiz(null); }} />
 
       {/* Login/Register dialog */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="xs" fullWidth>

@@ -9,7 +9,7 @@ import { Box, Typography, Grid, Link, Divider, Container } from '@mui/material';
  * Footer component for the application.
  * @component
  */
-function Footer() {
+function Footer({ onContactClick }) {
   const currentYear = new Date().getFullYear();
 
   const subjects = ['Maths', 'History', 'Science', 'Languages', 'Business'];
@@ -52,7 +52,16 @@ function Footer() {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Link href="#" color="inherit" underline="hover" variant="body2">Privacy Policy</Link>
               <Link href="#" color="inherit" underline="hover" variant="body2">Cookies Policy</Link>
-              <Link href="#" color="inherit" underline="hover" variant="body2">Contact Us</Link>
+              <Link 
+                component="button" 
+                color="inherit" 
+                underline="hover" 
+                variant="body2" 
+                onClick={(e) => { e.preventDefault(); onContactClick(); }}
+                sx={{ textAlign: 'left', p: 0 }}
+              >
+                Contact Us
+              </Link>
               <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
                 © {currentYear} Quizbot. All rights reserved.
               </Typography>
