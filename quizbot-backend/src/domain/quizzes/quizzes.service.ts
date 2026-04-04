@@ -32,6 +32,13 @@ export class QuizzesService {
   }
 
   /**
+   * Generates a quiz without persisting it (for guest users).
+   */
+  async generatePublic(dto: GenerateQuizDto) {
+    return this.aiService.generateQuiz(dto.topic, dto.questionCount);
+  }
+
+  /**
    * Retrieves all quizzes for a specific user.
    */
   async getUserHistory(userId: number) {

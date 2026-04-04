@@ -2,7 +2,7 @@
 // Horizontal card component for quiz generation (text input, upload, options)
 // Author: Quizbot Team
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card, CardContent, Typography, Box, TextField, Button, InputAdornment, MenuItem, FormControlLabel, Switch
 } from '@mui/material';
@@ -11,7 +11,7 @@ import {
  * QuizbotGeneratorCard allows users to input text, upload a document, and set quiz options.
  * @component
  */
-function QuizbotGeneratorCard({ onQuizGenerated }) {
+function QuizbotGeneratorCard({ onQuizGenerated, isLoggedIn }) {
   const [text, setText] = useState('');
   const [file, setFile] = useState(null);
   const [numQuestions, setNumQuestions] = useState(10);
@@ -20,6 +20,14 @@ function QuizbotGeneratorCard({ onQuizGenerated }) {
   const maxChars = 30000;
   const maxFileSizeMB = 5;
   const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
+
+  // Clear state on logout
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setText('');
+      setFile(null);
+    }
+  }, [isLoggedIn]);
 
   // Handles file upload
   const handleFileChange = (e) => {
@@ -43,9 +51,14 @@ function QuizbotGeneratorCard({ onQuizGenerated }) {
     }
 
     const token = localStorage.getItem('jwtToken');
+    
+    // Guest limit logic
     if (!token) {
-      alert('Please login first.');
-      return;
+      const guestCount = parseInt(localStorage.getItem('guestQuizCount') || '0');
+      if (guestCount >= 2) {
+        alert('Guest limit reached (2 quizzes). Please register to continue for free!');
+        return;
+      }
     }
 
     try {
@@ -60,12 +73,18 @@ function QuizbotGeneratorCard({ onQuizGenerated }) {
       }
 
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
-      const response = await fetch(`${apiUrl}/quizzes/generate`, {
+      const endpoint = token ? `${apiUrl}/quizzes/generate` : `${apiUrl}/quizzes/generate-public`;
+      
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(endpoint, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: headers,
         body: JSON.stringify({
           topic: content || 'General',
           questionCount: numQuestions
@@ -80,6 +99,13 @@ function QuizbotGeneratorCard({ onQuizGenerated }) {
 
       const quiz = await response.json();
       console.log('Quiz generated:', quiz);
+
+      // Increment guest count if not logged in
+      if (!token) {
+        const guestCount = parseInt(localStorage.getItem('guestQuizCount') || '0');
+        localStorage.setItem('guestQuizCount', (guestCount + 1).toString());
+      }
+
       if (onQuizGenerated) onQuizGenerated(quiz);
     } catch (err) {
       console.error('Generation Error:', err);

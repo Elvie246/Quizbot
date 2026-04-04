@@ -7,16 +7,22 @@ import { GenerateQuizDto } from './dto/generate-quiz.dto';
  * QuizzesController defines the API endpoints for quiz actions.
  */
 @Controller('quizzes')
-@UseGuards(JwtAuthGuard)
 export class QuizzesController {
   constructor(private readonly quizzesService: QuizzesService) {}
 
   @Post('generate')
+  @UseGuards(JwtAuthGuard)
   async generate(@Request() req, @Body() dto: GenerateQuizDto) {
     return this.quizzesService.generateQuiz(req.user.userId, dto);
   }
 
+  @Post('generate-public')
+  async generatePublic(@Body() dto: GenerateQuizDto) {
+    return this.quizzesService.generatePublic(dto);
+  }
+
   @Get('history')
+  @UseGuards(JwtAuthGuard)
   async getHistory(@Request() req) {
     return this.quizzesService.getUserHistory(req.user.userId);
   }

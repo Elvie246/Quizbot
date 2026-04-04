@@ -281,7 +281,7 @@ function App() {
                 <QuizbotTutorialCard />
               </Grid>
               <Grid item>
-                <QuizbotGeneratorCard onQuizGenerated={handleQuizGenerated} />
+                <QuizbotGeneratorCard onQuizGenerated={handleQuizGenerated} isLoggedIn={isLoggedIn} />
               </Grid>
             </Grid>
             <QuizbotWarning />
