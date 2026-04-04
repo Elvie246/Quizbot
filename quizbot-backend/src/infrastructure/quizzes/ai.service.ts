@@ -14,10 +14,9 @@ export class AIService {
   constructor(private configService: ConfigService) {
     const apiKey = this.configService.get<string>('GEMINI_API_KEY');
     this.genAI = new GoogleGenerativeAI(apiKey || 'fallback_key');
-    // Using 1.5-flash for speed and free tier quotas
+    // Using gemini-2.0-flash as identified in available models
     this.model = this.genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
-      generationConfig: { responseMimeType: "application/json" } // Force JSON mode
+      model: "gemini-2.0-flash"
     });
   }
 
@@ -26,33 +25,48 @@ export class AIService {
    */
   async generateQuiz(topic: string, count: number = 5) {
     const prompt = `
-      Create a quiz about "${topic}" with exactly ${count} multiple choice questions.
-      Follow this JSON structure:
+      You are an expert educator. Create a high-quality quiz based on the following content or topic:
+      "${topic}"
+      
+      Generate exactly ${count} multiple choice questions.
+      Each question must have exactly 4 options.
+      Only one option must be marked as "isCorrect": true.
+      The output must be a valid JSON object following this EXACT structure:
       {
-        "title": "Quiz Title",
-        "description": "Brief description of the quiz topic",
+        "title": "A concise and descriptive title for the quiz",
+        "description": "A brief summary of what this quiz covers (max 2 sentences)",
         "questions": [
           {
-            "text": "Question text?",
+            "text": "The question text?",
             "options": [
-              { "text": "Option 1", "isCorrect": true },
-              { "text": "Option 2", "isCorrect": false },
-              { "text": "Option 3", "isCorrect": false },
-              { "text": "Option 4", "isCorrect": false }
+              { "text": "Option A", "isCorrect": true },
+              { "text": "Option B", "isCorrect": false },
+              { "text": "Option C", "isCorrect": false },
+              { "text": "Option D", "isCorrect": false }
             ]
           }
         ]
       }
-      Ensure only one option is correct per question. Return only valid JSON.
+      
+      Important: 
+      - If the input above is a long text, extract key concepts to form questions.
+      - Return ONLY the JSON object. Do not include any explanation or markdown formatting (e.g., no \`\`\`json).
     `;
 
     try {
       const result = await this.model.generateContent(prompt);
-      const responseText = result.response.text();
+      let responseText = result.response.text();
+      
+      // Basic cleanup in case Gemini still includes markdown
+      responseText = responseText.replace(/```json\n?|```/g, '').trim();
+      
       return JSON.parse(responseText);
-    } catch (error) {
-      console.error('AI Generation Error:', error);
-      throw new InternalServerErrorException('Failed to generate quiz from AI');
+    } catch (error: any) {
+      console.error('AI Generation Error Detail:', JSON.stringify(error, null, 2));
+      if (error.status === 429) {
+        throw new InternalServerErrorException('Gemini API quota exceeded. Please wait a minute.');
+      }
+      throw new InternalServerErrorException('Failed to generate quiz from AI: ' + (error.message || 'Unknown error'));
     }
   }
 }

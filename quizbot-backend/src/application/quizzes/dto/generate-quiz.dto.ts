@@ -11,6 +11,6 @@ export class GenerateQuizDto {
   @IsOptional()
   @IsInt()
   @Min(1)
-  @Max(10)
+  @Max(20)
   questionCount?: number = 5;
 }

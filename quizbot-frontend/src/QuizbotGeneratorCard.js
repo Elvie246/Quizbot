@@ -11,21 +11,32 @@ import {
  * QuizbotGeneratorCard allows users to input text, upload a document, and set quiz options.
  * @component
  */
-function QuizbotGeneratorCard() {
+function QuizbotGeneratorCard({ onQuizGenerated }) {
   const [text, setText] = useState('');
   const [file, setFile] = useState(null);
   const [numQuestions, setNumQuestions] = useState(10);
   const [difficulty, setDifficulty] = useState('medium');
   const [timer, setTimer] = useState(false);
   const maxChars = 30000;
+  const maxFileSizeMB = 5;
+  const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
 
   // Handles file upload
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+    const selectedFile = e.target.files[0];
+    if (selectedFile && selectedFile.size > maxFileSizeBytes) {
+      alert(`File is too large. Maximum allowed size is ${maxFileSizeMB} MB.`);
+      e.target.value = null; // Reset input
+      setFile(null);
+      return;
+    }
+    setFile(selectedFile);
   };
 
   // Handles quiz generation
   const handleGenerate = async () => {
+    let content = text;
+    
     if (!text && !file) {
       alert('Please enter some text or upload a document.');
       return;
@@ -38,6 +49,16 @@ function QuizbotGeneratorCard() {
     }
 
     try {
+      // If a file is uploaded and no text is provided, read the file
+      if (!text && file) {
+        content = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.onerror = (e) => reject(new Error('Failed to read file'));
+          reader.readAsText(file);
+        });
+      }
+
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
       const response = await fetch(`${apiUrl}/quizzes/generate`, {
         method: 'POST',
@@ -46,7 +67,7 @@ function QuizbotGeneratorCard() {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          topic: text || (file ? file.name : 'General'),
+          topic: content || 'General',
           questionCount: numQuestions
         })
       });
@@ -59,14 +80,15 @@ function QuizbotGeneratorCard() {
 
       const quiz = await response.json();
       console.log('Quiz generated:', quiz);
-      alert('Quiz generated successfully! Check console for details.');
+      if (onQuizGenerated) onQuizGenerated(quiz);
     } catch (err) {
-      alert('Network error. Please try again.');
+      console.error('Generation Error:', err);
+      alert('Error: ' + err.message);
     }
   };
 
   return (
-    <Card sx={{ display: 'flex', flexDirection: 'row', minWidth: 400, maxWidth: 600, m: 2 }}>
+    <Card sx={{ display: 'flex', flexDirection: 'row', minWidth: 400, maxWidth: 800, m: 2 }}>
       <CardContent sx={{ flex: 1 }}>
         <Typography variant="h6" gutterBottom>Generate your Quiz</Typography>
         <Box sx={{ mb: 2 }}>
@@ -82,12 +104,15 @@ function QuizbotGeneratorCard() {
             inputProps={{ maxLength: maxChars }}
           />
         </Box>
-        <Box sx={{ mb: 2 }}>
+        <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
           <Button variant="outlined" component="label">
             Upload Document
             <input type="file" hidden accept=".pdf,.doc,.docx,.txt,.md" onChange={handleFileChange} />
           </Button>
-          {file && <Typography variant="body2" sx={{ ml: 2 }}>{file.name}</Typography>}
+          <Typography variant="caption" sx={{ ml: 2, color: 'text.secondary' }}>
+            Max: 5MB (.txt, .md, .pdf, .doc)
+          </Typography>
+          {file && <Typography variant="body2" sx={{ ml: 2, fontWeight: 'bold' }}>{file.name}</Typography>}
         </Box>
         <Box sx={{ mb: 2 }}>
           <TextField

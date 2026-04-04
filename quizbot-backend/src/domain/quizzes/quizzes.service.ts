@@ -21,8 +21,8 @@ export class QuizzesService {
    * Generates a real quiz using AI, deducts 1 credit and stores it.
    */
   async generateQuiz(userId: number, dto: GenerateQuizDto) {
-    // 1. Check and deduct 1 credit
-    await this.creditsService.deductCredits(userId, 1);
+    // 1. Check and deduct 1 credit (DISABLED FOR TESTING/UNLIMITED ACCESS)
+    // await this.creditsService.deductCredits(userId, 1);
 
     // 2. Generate quiz with AI
     const aiQuiz = await this.aiService.generateQuiz(dto.topic, dto.questionCount);
