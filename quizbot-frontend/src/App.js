@@ -50,14 +50,17 @@ function App() {
 
   // Check for existing token on mount
   useEffect(() => {
+    // We remove the automatic login on mount for now to allow testing 
+    // the public interface first. You can uncomment this if you want 
+    // persistent sessions.
+    /*
     const token = localStorage.getItem('jwtToken');
     if (token) {
-      // In a real app, we would validate the token and fetch user info
       setIsLoggedIn(true);
-      // For now, we'll mock a user if token exists
       setUser({ email: 'user@example.com' }); 
       fetchHistory();
     }
+    */
   }, []);
 
   // Mock fetch history (limit 3)
