@@ -9,7 +9,7 @@ import { Box, Typography, Grid, Link, Divider, Container } from '@mui/material';
  * Footer component for the application.
  * @component
  */
-function Footer({ onContactClick }) {
+function Footer({ onContactClick, onCookiesClick, onPrivacyClick }) {
   const currentYear = new Date().getFullYear();
 
   const subjects = ['Maths', 'History', 'Science', 'Languages', 'Business'];
@@ -50,8 +50,26 @@ function Footer({ onContactClick }) {
               Support & Legal
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Link href="#" color="inherit" underline="hover" variant="body2">Privacy Policy</Link>
-              <Link href="#" color="inherit" underline="hover" variant="body2">Cookies Policy</Link>
+              <Link 
+                component="button" 
+                color="inherit" 
+                underline="hover" 
+                variant="body2" 
+                onClick={(e) => { e.preventDefault(); onPrivacyClick(); }}
+                sx={{ textAlign: 'left', p: 0 }}
+              >
+                Privacy Policy
+              </Link>
+              <Link 
+                component="button" 
+                color="inherit" 
+                underline="hover" 
+                variant="body2" 
+                onClick={(e) => { e.preventDefault(); onCookiesClick(); }}
+                sx={{ textAlign: 'left', p: 0 }}
+              >
+                Cookies Policy
+              </Link>
               <Link 
                 component="button" 
                 color="inherit" 
