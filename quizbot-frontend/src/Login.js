@@ -36,10 +36,9 @@ function Login({ onLogin }) {
       return;
     }
     try {
-      // Replace the URL below with your backend login endpoint
-      const response = await fetch('http://localhost:3001/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+      const response = await fetch(`${apiUrl}/auth/login`, {
+        method: 'POST',        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
       if (!response.ok) {

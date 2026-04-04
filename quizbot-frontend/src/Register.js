@@ -24,16 +24,38 @@ function Register({ onRegister }) {
   const [error, setError] = useState('');
 
   // Handles form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Replace with real registration API call
     if (!email || !password || !confirmPassword) {
       setError('All fields are required.');
-    } else if (password !== confirmPassword) {
+      return;
+    }
+    if (password !== confirmPassword) {
       setError('Passwords do not match.');
-    } else {
+      return;
+    }
+
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+      const response = await fetch(`${apiUrl}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        setError(data.message || 'Registration failed.');
+        return;
+      }
+
+      const data = await response.json();
+      // Most register APIs return the user or a success message
       setError('');
-      onRegister && onRegister({ email });
+      alert('Registration successful! You can now login.');
+      onRegister && onRegister(data);
+    } catch (err) {
+      setError('Network error. Please try again.');
     }
   };
 

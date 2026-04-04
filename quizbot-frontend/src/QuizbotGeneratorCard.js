@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react';
 import {
-  Card, CardContent, Typography, Box, TextField, Button, Slider, InputAdornment, MenuItem, FormControlLabel, Switch
+  Card, CardContent, Typography, Box, TextField, Button, InputAdornment, MenuItem, FormControlLabel, Switch
 } from '@mui/material';
 
 /**
@@ -24,10 +24,45 @@ function QuizbotGeneratorCard() {
     setFile(e.target.files[0]);
   };
 
-  // Handles quiz generation (placeholder)
-  const handleGenerate = () => {
-    // TODO: Implement quiz generation logic
-    alert('Quiz generation not implemented yet.');
+  // Handles quiz generation
+  const handleGenerate = async () => {
+    if (!text && !file) {
+      alert('Please enter some text or upload a document.');
+      return;
+    }
+
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+      alert('Please login first.');
+      return;
+    }
+
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+      const response = await fetch(`${apiUrl}/quizzes/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          topic: text || (file ? file.name : 'General'),
+          questionCount: numQuestions
+        })
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        alert(data.message || 'Generation failed.');
+        return;
+      }
+
+      const quiz = await response.json();
+      console.log('Quiz generated:', quiz);
+      alert('Quiz generated successfully! Check console for details.');
+    } catch (err) {
+      alert('Network error. Please try again.');
+    }
   };
 
   return (
