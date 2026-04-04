@@ -3,7 +3,7 @@
 // Author: Quizbot Team
 
 import React from 'react';
-import { Card, CardContent, Typography, Box, Stepper, Step, StepLabel } from '@mui/material';
+import { Card, CardContent, Typography, Stepper, Step, StepLabel } from '@mui/material';
 
 /**
  * QuizbotTutorialCard displays a horizontal card with a 4-step tutorial.

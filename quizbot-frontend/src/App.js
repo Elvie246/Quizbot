@@ -12,6 +12,9 @@ import { Button, Box, AppBar, Toolbar, Typography, Dialog, IconButton, Grid } fr
 import CloseIcon from '@mui/icons-material/Close';
 import QuizbotTutorialCard from './QuizbotTutorialCard';
 import QuizbotGeneratorCard from './QuizbotGeneratorCard';
+import QuizbotWarning from './QuizbotWarning';
+import QuizbotFeatures from './QuizbotFeatures';
+import Footer from './Footer';
 import CreditsBar from './CreditsBar';
 
 
@@ -82,7 +85,11 @@ function App() {
             <QuizbotGeneratorCard />
           </Grid>
         </Grid>
+        <QuizbotWarning />
+        <QuizbotFeatures />
       </Box>
+
+      <Footer />
 
       {/* Login/Register dialog */}
       <Dialog open={dialogOpen} onClose={closeDialog} maxWidth="xs" fullWidth>
