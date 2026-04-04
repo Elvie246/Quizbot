@@ -6,6 +6,8 @@
 ![Prisma](https://img.shields.io/badge/Prisma-ORM-black)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
+![Animation](./Animation.gif)
+
 An AI-powered quiz generation platform that allows users to create interactive study materials from text or uploaded documents.
 
 ---
