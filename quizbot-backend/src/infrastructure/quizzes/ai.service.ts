@@ -14,10 +14,9 @@ export class AIService {
   constructor(private configService: ConfigService) {
     const apiKey = this.configService.get<string>('GEMINI_API_KEY');
     this.genAI = new GoogleGenerativeAI(apiKey || 'fallback_key');
-    // Using 1.5-flash for speed and free tier quotas
+    // Using gemini-2.0-flash as identified in available models
     this.model = this.genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
-      generationConfig: { responseMimeType: "application/json" } // Force JSON mode
+      model: "gemini-2.0-flash"
     });
   }
 
@@ -62,9 +61,12 @@ export class AIService {
       responseText = responseText.replace(/```json\n?|```/g, '').trim();
       
       return JSON.parse(responseText);
-    } catch (error) {
-      console.error('AI Generation Error:', error);
-      throw new InternalServerErrorException('Failed to generate quiz from AI');
+    } catch (error: any) {
+      console.error('AI Generation Error Detail:', JSON.stringify(error, null, 2));
+      if (error.status === 429) {
+        throw new InternalServerErrorException('Gemini API quota exceeded. Please wait a minute.');
+      }
+      throw new InternalServerErrorException('Failed to generate quiz from AI: ' + (error.message || 'Unknown error'));
     }
   }
 }
