@@ -25,6 +25,7 @@ import QuizbotWarning from './QuizbotWarning';
 import QuizbotFeatures from './QuizbotFeatures';
 import Footer from './Footer';
 import CreditsBar from './CreditsBar';
+import QuizDisplay from './QuizDisplay';
 
 /**
  * Main App component with public homepage and login/register dialogs.
@@ -34,6 +35,9 @@ function App() {
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  // State for current quiz display
+  const [currentQuiz, setCurrentQuiz] = useState(null);
+
   // State to control dialog visibility and mode (login/register)
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState('login');
@@ -42,7 +46,7 @@ function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   
   // App settings/features state
-  const [history, setHistory] = useState([]); // Will store last 3 quizzes
+  const [history, setHistory] = useState([]); // Will store last 5 quizzes
   const [notes, setNotes] = useState('');
   const [showNotes, setShowNotes] = useState(false);
   const [language, setLanguage] = useState('EN');
@@ -91,6 +95,7 @@ function App() {
   // Callback when a new quiz is generated
   const handleQuizGenerated = (newQuiz) => {
     setHistory(prev => [newQuiz, ...prev].slice(0, 5));
+    setCurrentQuiz(newQuiz);
   };
 
   // Handler for logout
@@ -99,6 +104,7 @@ function App() {
     setUser(null);
     setIsLoggedIn(false);
     setDrawerOpen(false);
+    setCurrentQuiz(null);
   };
 
   // Handler after successful registration
@@ -135,7 +141,7 @@ function App() {
       </Typography>
       <Divider />
       <List>
-        <ListItem button onClick={() => setShowNotes(false)}>
+        <ListItem button onClick={() => { setShowNotes(false); setCurrentQuiz(null); }}>
           <ListItemIcon><HomeIcon /></ListItemIcon>
           <ListItemText primary={language === 'EN' ? 'Home' : 'Accueil'} />
         </ListItem>
@@ -145,7 +151,7 @@ function App() {
           {language === 'EN' ? 'RECENT HISTORY' : 'HISTORIQUE RÉCENT'}
         </Typography>
         {history.map((item) => (
-          <ListItem key={item.id}>
+          <ListItem button key={item.id} onClick={() => setCurrentQuiz(item)}>
             <ListItemIcon><HistoryIcon fontSize="small" /></ListItemIcon>
             <ListItemText primary={item.title} secondaryTypographyProps={{ fontSize: '0.8rem' }} />
           </ListItem>
@@ -242,17 +248,27 @@ function App() {
           </Box>
         )}
 
-        <Grid container spacing={2} justifyContent="center" sx={{ px: 2 }}>
-          <Grid item>
-            <QuizbotTutorialCard />
-          </Grid>
-          <Grid item>
-            <QuizbotGeneratorCard onQuizGenerated={handleQuizGenerated} />
-          </Grid>
-        </Grid>
-
-        <QuizbotWarning />
-        <QuizbotFeatures />
+        {!currentQuiz ? (
+          <>
+            <Grid container spacing={2} justifyContent="center" sx={{ px: 2 }}>
+              <Grid item>
+                <QuizbotTutorialCard />
+              </Grid>
+              <Grid item>
+                <QuizbotGeneratorCard onQuizGenerated={handleQuizGenerated} />
+              </Grid>
+            </Grid>
+            <QuizbotWarning />
+            <QuizbotFeatures />
+          </>
+        ) : (
+          <Box sx={{ width: '100%', maxWidth: 900, px: 2 }}>
+            <Button variant="outlined" onClick={() => setCurrentQuiz(null)} sx={{ mb: 2 }}>
+              {language === 'EN' ? '← Back to Generator' : '← Retour au générateur'}
+            </Button>
+            <QuizDisplay quiz={currentQuiz} onFinish={() => {}} />
+          </Box>
+        )}
       </Box>
 
       <Footer />

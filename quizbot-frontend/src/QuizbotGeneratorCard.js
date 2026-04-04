@@ -18,10 +18,19 @@ function QuizbotGeneratorCard({ onQuizGenerated }) {
   const [difficulty, setDifficulty] = useState('medium');
   const [timer, setTimer] = useState(false);
   const maxChars = 30000;
+  const maxFileSizeMB = 5;
+  const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
 
   // Handles file upload
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+    const selectedFile = e.target.files[0];
+    if (selectedFile && selectedFile.size > maxFileSizeBytes) {
+      alert(`File is too large. Maximum allowed size is ${maxFileSizeMB} MB.`);
+      e.target.value = null; // Reset input
+      setFile(null);
+      return;
+    }
+    setFile(selectedFile);
   };
 
   // Handles quiz generation
@@ -72,7 +81,6 @@ function QuizbotGeneratorCard({ onQuizGenerated }) {
       const quiz = await response.json();
       console.log('Quiz generated:', quiz);
       if (onQuizGenerated) onQuizGenerated(quiz);
-      alert('Quiz generated successfully!');
     } catch (err) {
       console.error('Generation Error:', err);
       alert('Error: ' + err.message);
@@ -80,7 +88,7 @@ function QuizbotGeneratorCard({ onQuizGenerated }) {
   };
 
   return (
-    <Card sx={{ display: 'flex', flexDirection: 'row', minWidth: 400, maxWidth: 600, m: 2 }}>
+    <Card sx={{ display: 'flex', flexDirection: 'row', minWidth: 400, maxWidth: 800, m: 2 }}>
       <CardContent sx={{ flex: 1 }}>
         <Typography variant="h6" gutterBottom>Generate your Quiz</Typography>
         <Box sx={{ mb: 2 }}>
@@ -96,12 +104,15 @@ function QuizbotGeneratorCard({ onQuizGenerated }) {
             inputProps={{ maxLength: maxChars }}
           />
         </Box>
-        <Box sx={{ mb: 2 }}>
+        <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
           <Button variant="outlined" component="label">
             Upload Document
             <input type="file" hidden accept=".pdf,.doc,.docx,.txt,.md" onChange={handleFileChange} />
           </Button>
-          {file && <Typography variant="body2" sx={{ ml: 2 }}>{file.name}</Typography>}
+          <Typography variant="caption" sx={{ ml: 2, color: 'text.secondary' }}>
+            Max: 5MB (.txt, .md, .pdf, .doc)
+          </Typography>
+          {file && <Typography variant="body2" sx={{ ml: 2, fontWeight: 'bold' }}>{file.name}</Typography>}
         </Box>
         <Box sx={{ mb: 2 }}>
           <TextField
