@@ -45,12 +45,18 @@ export class AuthService {
     }
 
     const payload = { sub: user.id, email: user.email };
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-      user: {
-        id: user.id,
-        email: user.email
-      }
-    };
+    try {
+      const token = await this.jwtService.signAsync(payload);
+      return {
+        token: token,
+        user: {
+          id: user.id,
+          email: user.email
+        }
+      };
+    } catch (error) {
+      console.error('JWT Signing Error:', error);
+      throw error;
+    }
   }
 }

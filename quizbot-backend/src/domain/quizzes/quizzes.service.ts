@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { CreditsService } from '../credits/credits.service';
-import { IQuizzesRepository } from './quizzes.repository.interface';
+import * as Repositories from './quizzes.repository.interface';
 import { AIService } from '../../infrastructure/quizzes/ai.service';
 import { GenerateQuizDto } from '../../application/quizzes/dto/generate-quiz.dto';
 
@@ -14,7 +14,7 @@ export class QuizzesService {
     private readonly creditsService: CreditsService,
     private readonly aiService: AIService,
     @Inject('IQuizzesRepository')
-    private readonly quizzesRepository: IQuizzesRepository,
+    private readonly quizzesRepository: Repositories.IQuizzesRepository,
   ) {}
 
   /**

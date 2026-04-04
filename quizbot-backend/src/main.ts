@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
@@ -15,6 +16,9 @@ async function bootstrap() {
     forbidNonWhitelisted: true, // Throw an error if extra fields are provided
     transform: true, // Automatically transform payloads to DTO instances
   }));
+
+  // Set global API prefix
+  app.setGlobalPrefix('api');
 
   // Enable CORS for frontend communication
   app.enableCors({

@@ -1,5 +1,5 @@
 import { Injectable, Inject, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { ICreditsRepository } from './credits.repository.interface';
+import * as Repositories from './credits.repository.interface';
 
 /**
  * CreditsService manages business logic for Credits.
@@ -9,7 +9,7 @@ import { ICreditsRepository } from './credits.repository.interface';
 export class CreditsService {
   constructor(
     @Inject('ICreditsRepository')
-    private readonly creditsRepository: ICreditsRepository,
+    private readonly creditsRepository: Repositories.ICreditsRepository,
   ) {}
 
   async getBalance(userId: number) {
