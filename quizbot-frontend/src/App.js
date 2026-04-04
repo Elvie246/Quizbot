@@ -50,35 +50,47 @@ function App() {
 
   // Check for existing token on mount
   useEffect(() => {
-    // We remove the automatic login on mount for now to allow testing 
-    // the public interface first. You can uncomment this if you want 
-    // persistent sessions.
-    /*
     const token = localStorage.getItem('jwtToken');
     if (token) {
       setIsLoggedIn(true);
-      setUser({ email: 'user@example.com' }); 
+      setUser({ email: localStorage.getItem('userEmail') || 'user@example.com' }); 
       fetchHistory();
     }
-    */
   }, []);
 
-  // Mock fetch history (limit 3)
-  const fetchHistory = () => {
-    // This would be an API call in reality
-    setHistory([
-      { id: 1, title: 'JavaScript Basics' },
-      { id: 2, title: 'React Hooks' },
-      { id: 3, title: 'CSS Grid' }
-    ]);
+  // Fetch real history from API
+  const fetchHistory = async () => {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) return;
+
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+      const response = await fetch(`${apiUrl}/quizzes/history`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setHistory(data.slice(0, 5)); // Show last 5
+      }
+    } catch (err) {
+      console.error('Failed to fetch history:', err);
+    }
   };
 
   // Handler after successful login
   const handleLogin = (userData) => {
     setUser(userData);
+    localStorage.setItem('userEmail', userData.email);
     setIsLoggedIn(true);
     setDialogOpen(false);
     fetchHistory();
+  };
+
+  // Callback when a new quiz is generated
+  const handleQuizGenerated = (newQuiz) => {
+    setHistory(prev => [newQuiz, ...prev].slice(0, 5));
   };
 
   // Handler for logout
@@ -235,7 +247,7 @@ function App() {
             <QuizbotTutorialCard />
           </Grid>
           <Grid item>
-            <QuizbotGeneratorCard />
+            <QuizbotGeneratorCard onQuizGenerated={handleQuizGenerated} />
           </Grid>
         </Grid>
 
