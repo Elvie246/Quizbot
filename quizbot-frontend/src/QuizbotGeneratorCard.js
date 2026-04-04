@@ -11,7 +11,7 @@ import {
  * QuizbotGeneratorCard allows users to input text, upload a document, and set quiz options.
  * @component
  */
-function QuizbotGeneratorCard() {
+function QuizbotGeneratorCard({ onQuizGenerated }) {
   const [text, setText] = useState('');
   const [file, setFile] = useState(null);
   const [numQuestions, setNumQuestions] = useState(10);
@@ -71,7 +71,8 @@ function QuizbotGeneratorCard() {
 
       const quiz = await response.json();
       console.log('Quiz generated:', quiz);
-      alert('Quiz generated successfully! Check console for details.');
+      if (onQuizGenerated) onQuizGenerated(quiz);
+      alert('Quiz generated successfully!');
     } catch (err) {
       console.error('Generation Error:', err);
       alert('Error: ' + err.message);
