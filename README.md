@@ -1,5 +1,11 @@
 # Quizbot Technical Documentation
 
+![Node](https://img.shields.io/badge/node-%3E%3D18-green)
+![NestJS](https://img.shields.io/badge/NestJS-backend-red)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-database-blue)
+![Prisma](https://img.shields.io/badge/Prisma-ORM-black)
+![License](https://img.shields.io/badge/license-MIT-lightgrey)
+
 An AI-powered quiz generation platform that allows users to create interactive study materials from text or uploaded documents.
 
 ---
@@ -12,11 +18,12 @@ An AI-powered quiz generation platform that allows users to create interactive s
 5. [JWT Authentication](#jwt-authentication)
 6. [Quiz Generation Workflow](#quiz-generation-workflow)
 7. [REST API Endpoints](#rest-api-endpoints)
-8. [Prerequisites](#prerequisites)
-9. [Deployment Instructions](#deployment-instructions)
-10. [Database & Test Users](#database--test-users)
-11. [Technologies Used](#technologies-used)
-12. [Useful Commands](#useful-commands)
+8. [Error Handling](#error-handling)
+9. [Prerequisites](#prerequisites)
+10. [Deployment Instructions](#deployment-instructions)
+11. [Database & Test Users](#database--test-users)
+12. [Technologies Used](#technologies-used)
+13. [Useful Commands](#useful-commands)
 
 ---
 
@@ -109,12 +116,6 @@ When a user logs in, the server generates a token with the following payload str
 }
 ```
 
-### Authentication Logic
-1. **Config**: `JWT_SECRET` and `JWT_EXPIRES_IN` are loaded from `.env`.
-2. **Validation**: The `JwtStrategy` verifies the signature and expiration.
-3. **Guard**: The `@UseGuards(JwtAuthGuard)` decorator protects routes.
-4. **Revocation**: Client-side logout clears the token from `localStorage`.
-
 ---
 
 ## Quiz Generation Workflow
@@ -142,6 +143,21 @@ When a user logs in, the server generates a token with the following payload str
 
 ---
 
+## Error Handling
+
+The API uses standard HTTP status codes to indicate the success or failure of requests.
+
+| Code | Response Message | Explanation |
+| :--- | :--- | :--- |
+| **400** | `Bad Request` | Validation failed (e.g., missing required fields or invalid data types). |
+| **401** | `Unauthorized` | Missing or invalid JWT Bearer token. User must log in again. |
+| **403** | `Forbidden` | Insufficient credits to perform quiz generation. |
+| **413** | `Payload Too Large` | The uploaded document or text exceeds the server limit (50MB). |
+| **429** | `Too Many Requests` | Gemini AI API quota exceeded. Please wait 60 seconds. |
+| **500** | `Internal Server Error` | Unexpected server error or failure in AI generation. |
+
+---
+
 ## Prerequisites
 - **Node.js**: v18+
 - **Docker**: For PostgreSQL.
@@ -158,19 +174,41 @@ cd Quizbot
 ```
 
 ### Phase 2: Configuration
-1. **Backend**: 
-   - `cd quizbot-backend`
-   - Copy `.env.example` to `.env` and fill:
-     - `DATABASE_URL=postgresql://quizbot_user:quizbot_password@localhost:5432/quizbot_db?schema=public`
-     - `GEMINI_API_KEY=your_google_api_key`
-2. **Frontend**: 
-   - `cd ../quizbot-frontend`
-   - Set `REACT_APP_API_URL=http://localhost:3000/api` in `.env`.
+```bash
+# 1. Backend Configuration
+cd quizbot-backend
+# Create .env and add:
+# DATABASE_URL=postgresql://quizbot_user:quizbot_password@localhost:5432/quizbot_db?schema=public
+# JWT_SECRET=your_secret_key
+# GEMINI_API_KEY=your_google_api_key
+
+# 2. Frontend Configuration
+cd ../quizbot-frontend
+# Create .env and add:
+# REACT_APP_API_URL=http://localhost:3000/api
+```
 
 ### Phase 3: Launch Services
-1. **Database**: `docker-compose up -d` (from root).
-2. **Backend**: `npm install && npm run start:dev`.
-3. **Frontend**: `npm install && npm start`.
+```bash
+# 1. Database (from root)
+docker-compose up -d
+
+# 2. Backend
+cd quizbot-backend
+npm install
+npm run start:dev
+
+# 3. Frontend
+cd ../quizbot-frontend
+npm install
+npm start
+```
+
+### Phase 4: Access
+```bash
+# Open your browser at:
+http://localhost:3001
+```
 
 ---
 
