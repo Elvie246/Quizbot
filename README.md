@@ -6,6 +6,8 @@
 ![Prisma](https://img.shields.io/badge/Prisma-ORM-black)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
+![Animation](./Animation.gif)
+
 An AI-powered quiz generation platform that allows users to create interactive study materials from text or uploaded documents.
 
 ---
@@ -19,11 +21,12 @@ An AI-powered quiz generation platform that allows users to create interactive s
 6. [Quiz Generation Workflow](#quiz-generation-workflow)
 7. [REST API Endpoints](#rest-api-endpoints)
 8. [Error Handling](#error-handling)
-9. [Prerequisites](#prerequisites)
-10. [Deployment Instructions](#deployment-instructions)
-11. [Database & Test Users](#database--test-users)
-12. [Technologies Used](#technologies-used)
-13. [Useful Commands](#useful-commands)
+9. [Release History & Roadmap](#release-history--roadmap)
+10. [Prerequisites](#prerequisites)
+11. [Deployment Instructions](#deployment-instructions)
+12. [Database & Test Users](#database--test-users)
+13. [Technologies Used](#technologies-used)
+14. [Useful Commands](#useful-commands)
 
 ---
 
@@ -106,7 +109,6 @@ sequenceDiagram
 ## JWT Authentication
 
 ### Token Generation Example
-When a user logs in, the server generates a token with the following payload structure:
 ```json
 {
   "sub": 2,
@@ -124,12 +126,6 @@ When a user logs in, the server generates a token with the following payload str
 | :--- | :--- | :--- | :--- |
 | `/api/quizzes/generate` | Orchestrates AI call and persistence. | `topic` (string), `questionCount` (int) | `Quiz` object with nested questions |
 
-### Logic Steps:
-1. Extract content from request (Text or File Content).
-2. Format a specific prompt for Gemini to force JSON output.
-3. Parse and validate the AI's JSON response.
-4. Save the nested structure (Quiz -> Questions -> Options) in a single Prisma transaction.
-
 ---
 
 ## REST API Endpoints
@@ -138,30 +134,43 @@ When a user logs in, the server generates a token with the following payload str
 | :--- | :--- | :--- |
 | `/api/auth/register` | `POST` | User registration. |
 | `/api/auth/login` | `POST` | User login (returns JWT). |
+| `/api/quizzes/generate-public` | `POST` | Public AI generation (Guest mode). |
 | `/api/quizzes/history` | `GET` | User quiz history. |
-| `/api/quizzes/:id` | `GET` | Get single quiz details. |
 
 ---
 
 ## Error Handling
 
-The API uses standard HTTP status codes to indicate the success or failure of requests.
-
 | Code | Response Message | Explanation |
 | :--- | :--- | :--- |
-| **400** | `Bad Request` | Validation failed (e.g., missing required fields or invalid data types). |
-| **401** | `Unauthorized` | Missing or invalid JWT Bearer token. User must log in again. |
-| **403** | `Forbidden` | Insufficient credits to perform quiz generation. |
-| **413** | `Payload Too Large` | The uploaded document or text exceeds the server limit (50MB). |
-| **429** | `Too Many Requests` | Gemini AI API quota exceeded. Please wait 60 seconds. |
-| **500** | `Internal Server Error` | Unexpected server error or failure in AI generation. |
+| **401** | `Unauthorized` | Missing or invalid JWT token. |
+| **413** | `Payload Too Large` | Document exceeds 50MB. |
+| **429** | `Too Many Requests` | Gemini quota exceeded. |
+
+---
+
+## Release History & Roadmap
+
+### Release 1.0.0 (Current)
+- **Core Engine**: AI quiz generation using Google Gemini 2.0 Flash.
+- **Authentication**: Secure JWT-based login/register system.
+- **DDD Architecture**: Scalable backend following Domain-Driven Design.
+- **Guest Mode**: Allows non-registered users to test the app (limit: 2 quizzes).
+- **File Support**: Document upload (txt, md) with 50MB server limit.
+- **Interactive UI**: Dark/Light mode, multi-language (EN/FR), and quiz player.
+- **Legal Pages**: Privacy Policy, Cookies Policy, and Contact Us integration.
+
+### Release 2.0.0 (Planned Roadmap)
+- **Premium AI Integration**: Support for OpenAI (GPT-4o) or Anthropic (Claude 3.5) for superior quiz quality.
+- **Advanced File Parsing**: Native support for PDF and DOCX deep analysis.
+- **User Dashboard**: Detailed statistics on quiz performance and learning progress.
+- **Pro Credits System**: Integration of a real payment gateway (Stripe) for unlimited generations.
 
 ---
 
 ## Prerequisites
 - **Node.js**: v18+
 - **Docker**: For PostgreSQL.
-- **Git**: To clone the repository.
 
 ---
 
@@ -175,45 +184,29 @@ cd Quizbot
 
 ### Phase 2: Configuration
 ```bash
-# 1. Backend Configuration
-cd quizbot-backend
-# Create .env and add:
-# DATABASE_URL=postgresql://quizbot_user:quizbot_password@localhost:5432/quizbot_db?schema=public
-# JWT_SECRET=your_secret_key
-# GEMINI_API_KEY=your_google_api_key
+# Backend .env
+DATABASE_URL=postgresql://quizbot_user:quizbot_password@localhost:5432/quizbot_db?schema=public
+JWT_SECRET=your_secret
+GEMINI_API_KEY=your_key
 
-# 2. Frontend Configuration
-cd ../quizbot-frontend
-# Create .env and add:
-# REACT_APP_API_URL=http://localhost:3000/api
+# Frontend .env
+REACT_APP_API_URL=http://localhost:3000/api
 ```
 
 ### Phase 3: Launch Services
 ```bash
-# 1. Database (from root)
 docker-compose up -d
-
-# 2. Backend
-cd quizbot-backend
-npm install
-npm run start:dev
-
-# 3. Frontend
-cd ../quizbot-frontend
-npm install
-npm start
+# Then npm install & npm start in both folders
 ```
 
 ### Phase 4: Access
 ```bash
-# Open your browser at:
 http://localhost:3001
 ```
 
 ---
 
 ## Database & Test Users
-
 | Email | Password | Role |
 | :--- | :--- | :--- |
 | `testlocal@gmail.com` | `testlocal` | Test User |
@@ -221,16 +214,10 @@ http://localhost:3001
 ---
 
 ## Technologies Used
-- **NestJS** (Backend)
-- **React + MUI** (Frontend)
-- **Prisma** (ORM)
-- **PostgreSQL** (Database)
-- **Docker** (Infrastructure)
-- **Google Gemini** (AI)
+- **NestJS**, **React**, **PostgreSQL**, **Prisma**, **Docker**, **Google Gemini**.
 
 ---
 
 ## Useful Commands
-- `npx prisma studio`: Browse database records via UI.
-- `npm run start:dev`: Run backend with hot-reload.
-- `docker ps`: List running containers.
+- `npx prisma studio`: View database.
+- `npm run start:dev`: Run backend.
