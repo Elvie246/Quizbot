@@ -28,6 +28,17 @@ model Credit {
   updatedAt DateTime @updatedAt
 }
 
+model GuestCreditUsage {
+  id        Int      @id @default(autoincrement())
+  guestId   String
+  usageDay  String
+  quizCount Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([guestId, usageDay])
+}
+
 model Quiz {
   id          Int        @id @default(autoincrement())
   title       String
