@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { IUserRepository } from '../../../domain/users/user.repository.interface';
 import { User } from '@prisma/client';
+import { INITIAL_USER_CREDITS } from '../../../domain/credits/credits.constants';
 
 /**
  * Concrete implementation of IUserRepository using Prisma.
@@ -19,10 +20,10 @@ export class PrismaUserRepository implements IUserRepository {
       data: {
         ...data,
         credits: {
-          create: { amount: 10 } // Initial credits
-        }
+          create: { amount: INITIAL_USER_CREDITS },
+        },
       },
-      include: { credits: true }
+      include: { credits: true },
     });
   }
 
