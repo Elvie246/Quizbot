@@ -1,4 +1,14 @@
-import { Controller, Post, Get, Body, UseGuards, Request, Param, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Headers,
+  UseGuards,
+  Request,
+  Param,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../../infrastructure/auth/guards/jwt-auth.guard';
 import { QuizzesService } from '../../domain/quizzes/quizzes.service';
 import { GenerateQuizDto } from './dto/generate-quiz.dto';
@@ -17,8 +27,11 @@ export class QuizzesController {
   }
 
   @Post('generate-public')
-  async generatePublic(@Body() dto: GenerateQuizDto) {
-    return this.quizzesService.generatePublic(dto);
+  async generatePublic(
+    @Headers('x-guest-id') guestId: string,
+    @Body() dto: GenerateQuizDto,
+  ) {
+    return this.quizzesService.generatePublic(guestId, dto);
   }
 
   @Get('history')
