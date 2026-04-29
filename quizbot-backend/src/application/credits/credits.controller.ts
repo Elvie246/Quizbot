@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Headers, Request, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../infrastructure/auth/guards/jwt-auth.guard';
 import { CreditsService } from '../../domain/credits/credits.service';
 
@@ -6,13 +6,17 @@ import { CreditsService } from '../../domain/credits/credits.service';
  * CreditsController defines the API endpoints for credit management.
  */
 @Controller('credits')
-@UseGuards(JwtAuthGuard)
 export class CreditsController {
   constructor(private readonly creditsService: CreditsService) {}
 
   @Get('balance')
+  @UseGuards(JwtAuthGuard)
   async getBalance(@Request() req) {
-    const balance = await this.creditsService.getBalance(req.user.userId);
-    return { balance };
+    return this.creditsService.getUserCreditSummary(req.user.userId);
+  }
+
+  @Get('public-balance')
+  async getPublicBalance(@Headers('x-guest-id') guestId: string) {
+    return this.creditsService.getGuestCreditSummary(guestId);
   }
 }
