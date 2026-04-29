@@ -8,6 +8,8 @@ import {
 } from '@mui/material';
 import { getOrCreateGuestId } from './guestSession';
 
+const SUPPORTED_TEXT_EXTENSIONS = ['.txt', '.md'];
+
 /**
  * QuizbotGeneratorCard allows users to input text, upload a document, and set quiz options.
  * @component
@@ -18,6 +20,7 @@ function QuizbotGeneratorCard({ onQuizGenerated, isLoggedIn, creditsSummary }) {
   const [numQuestions, setNumQuestions] = useState(10);
   const [difficulty, setDifficulty] = useState('medium');
   const [timer, setTimer] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const maxChars = 30000;
   const maxFileSizeMB = 5;
   const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
@@ -46,6 +49,23 @@ function QuizbotGeneratorCard({ onQuizGenerated, isLoggedIn, creditsSummary }) {
   // Handles file upload
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
+    if (!selectedFile) {
+      setFile(null);
+      return;
+    }
+
+    const normalizedFileName = selectedFile.name.toLowerCase();
+    const isSupportedTextFile = SUPPORTED_TEXT_EXTENSIONS.some((extension) =>
+      normalizedFileName.endsWith(extension),
+    );
+
+    if (!isSupportedTextFile) {
+      alert('Only .txt and .md files are currently supported for quiz generation.');
+      e.target.value = null; // Reset input
+      setFile(null);
+      return;
+    }
+
     if (selectedFile && selectedFile.size > maxFileSizeBytes) {
       alert(`File is too large. Maximum allowed size is ${maxFileSizeMB} MB.`);
       e.target.value = null; // Reset input
@@ -57,9 +77,14 @@ function QuizbotGeneratorCard({ onQuizGenerated, isLoggedIn, creditsSummary }) {
 
   // Handles quiz generation
   const handleGenerate = async () => {
-    let content = text;
+    if (isGenerating) {
+      return;
+    }
+
+    const trimmedText = text.trim();
+    let content = trimmedText;
     
-    if (!text && !file) {
+    if (!trimmedText && !file) {
       alert('Please enter some text or upload a document.');
       return;
     }
@@ -76,9 +101,11 @@ function QuizbotGeneratorCard({ onQuizGenerated, isLoggedIn, creditsSummary }) {
       return;
     }
 
+    setIsGenerating(true);
+
     try {
       // If a file is uploaded and no text is provided, read the file
-      if (!text && file) {
+      if (!trimmedText && file) {
         content = await new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = (e) => resolve(e.target.result);
@@ -124,6 +151,8 @@ function QuizbotGeneratorCard({ onQuizGenerated, isLoggedIn, creditsSummary }) {
     } catch (err) {
       console.error('Generation Error:', err);
       alert('Error: ' + err.message);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -147,10 +176,10 @@ function QuizbotGeneratorCard({ onQuizGenerated, isLoggedIn, creditsSummary }) {
         <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
           <Button variant="outlined" component="label">
             Upload Document
-            <input type="file" hidden accept=".pdf,.doc,.docx,.txt,.md" onChange={handleFileChange} />
+            <input type="file" hidden accept=".txt,.md" onChange={handleFileChange} />
           </Button>
           <Typography variant="caption" sx={{ ml: 2, color: 'text.secondary' }}>
-            Max: 5MB (.txt, .md, .pdf, .doc)
+            Max: 5MB (.txt, .md)
           </Typography>
           {file && <Typography variant="body2" sx={{ ml: 2, fontWeight: 'bold' }}>{file.name}</Typography>}
         </Box>
@@ -184,8 +213,8 @@ function QuizbotGeneratorCard({ onQuizGenerated, isLoggedIn, creditsSummary }) {
             label="Enable Timer"
           />
         </Box>
-        <Button variant="contained" color="primary" onClick={handleGenerate}>
-          Generate Quiz
+        <Button variant="contained" color="primary" onClick={handleGenerate} disabled={isGenerating}>
+          {isGenerating ? 'Generating...' : 'Generate Quiz'}
         </Button>
       </CardContent>
     </Card>
