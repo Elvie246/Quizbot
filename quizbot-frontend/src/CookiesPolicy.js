@@ -3,7 +3,7 @@
 // Author: Quizbot Team
 
 import React from 'react';
-import { Box, Typography, Paper, Button, Divider, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import { Box, Typography, Paper, Button, Divider } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import SecurityIcon from '@mui/icons-material/Security';
 import SettingsIcon from '@mui/icons-material/Settings';
