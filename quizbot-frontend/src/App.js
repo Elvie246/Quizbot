@@ -29,13 +29,14 @@ import QuizDisplay from './QuizDisplay';
 import ContactUs from './ContactUs';
 import CookiesPolicy from './CookiesPolicy';
 import PrivacyPolicy from './PrivacyPolicy';
+import { getOrCreateGuestId } from './guestSession';
 
 /**
  * Main App component with public homepage and login/register dialogs.
  */
 function App() {
   // State for authentication
-  const [user, setUser] = useState(null);
+  const [, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // State for current quiz display
@@ -59,6 +60,31 @@ function App() {
   const [showNotes, setShowNotes] = useState(false);
   const [language, setLanguage] = useState('EN');
   const [theme, setTheme] = useState('light');
+  const [creditsSummary, setCreditsSummary] = useState(null);
+
+  // Fetch live credits information depending on the current visitor mode
+  const fetchCreditsSummary = async (tokenOverride) => {
+    const token = tokenOverride ?? localStorage.getItem('jwtToken');
+    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+    const endpoint = token ? `${apiUrl}/credits/balance` : `${apiUrl}/credits/public-balance`;
+    const headers = token
+      ? { Authorization: `Bearer ${token}` }
+      : { 'X-Guest-Id': getOrCreateGuestId() };
+
+    try {
+      const response = await fetch(endpoint, { headers });
+      if (!response.ok) {
+        setCreditsSummary(null);
+        return;
+      }
+
+      const data = await response.json();
+      setCreditsSummary(data);
+    } catch (err) {
+      console.error('Failed to fetch credits summary:', err);
+      setCreditsSummary(null);
+    }
+  };
 
   // Check for existing token on mount
   useEffect(() => {
@@ -67,7 +93,11 @@ function App() {
       setIsLoggedIn(true);
       setUser({ email: localStorage.getItem('userEmail') || 'user@example.com' }); 
       fetchHistory();
+      fetchCreditsSummary(token);
+      return;
     }
+
+    fetchCreditsSummary();
   }, []);
 
   // Fetch real history from API
@@ -98,17 +128,20 @@ function App() {
     setIsLoggedIn(true);
     setDialogOpen(false);
     fetchHistory();
+    fetchCreditsSummary();
   };
 
   // Callback when a new quiz is generated
   const handleQuizGenerated = (newQuiz) => {
     setHistory(prev => [newQuiz, ...prev].slice(0, 5));
     setCurrentQuiz(newQuiz);
+    fetchCreditsSummary();
   };
 
   // Handler for logout
   const handleLogout = () => {
     localStorage.removeItem('jwtToken');
+    localStorage.removeItem('userEmail');
     setUser(null);
     setIsLoggedIn(false);
     setDrawerOpen(false);
@@ -116,6 +149,7 @@ function App() {
     setShowContact(false);
     setShowCookies(false);
     setShowPrivacy(false);
+    fetchCreditsSummary();
   };
 
   // Handler after successful registration
@@ -248,8 +282,13 @@ function App() {
           </Typography>
         )}
 
-        {/* Show Credits Bar only if NOT logged in and not on other pages */}
-        {!isLoggedIn && !showContact && !showCookies && !showPrivacy && !currentQuiz && <CreditsBar onLoginClick={() => { setDialogMode('login'); setDialogOpen(true); }} />}
+        {/* Show the active credit policy on the generator view */}
+        {!showContact && !showCookies && !showPrivacy && !currentQuiz && (
+          <CreditsBar
+            creditsSummary={creditsSummary}
+            onLoginClick={() => { setDialogMode('login'); setDialogOpen(true); }}
+          />
+        )}
 
         {/* Notepad (conditional) */}
         {isLoggedIn && showNotes && !showContact && !showCookies && !showPrivacy && !currentQuiz && (
@@ -281,7 +320,11 @@ function App() {
                 <QuizbotTutorialCard />
               </Grid>
               <Grid item>
-                <QuizbotGeneratorCard onQuizGenerated={handleQuizGenerated} isLoggedIn={isLoggedIn} />
+                <QuizbotGeneratorCard
+                  onQuizGenerated={handleQuizGenerated}
+                  isLoggedIn={isLoggedIn}
+                  creditsSummary={creditsSummary}
+                />
               </Grid>
             </Grid>
             <QuizbotWarning />
