@@ -6,12 +6,13 @@ import React, { useState, useEffect } from 'react';
 import {
   Card, CardContent, Typography, Box, TextField, Button, InputAdornment, MenuItem, FormControlLabel, Switch
 } from '@mui/material';
+import { getOrCreateGuestId } from './guestSession';
 
 /**
  * QuizbotGeneratorCard allows users to input text, upload a document, and set quiz options.
  * @component
  */
-function QuizbotGeneratorCard({ onQuizGenerated, isLoggedIn }) {
+function QuizbotGeneratorCard({ onQuizGenerated, isLoggedIn, creditsSummary }) {
   const [text, setText] = useState('');
   const [file, setFile] = useState(null);
   const [numQuestions, setNumQuestions] = useState(10);
@@ -28,6 +29,19 @@ function QuizbotGeneratorCard({ onQuizGenerated, isLoggedIn }) {
       setFile(null);
     }
   }, [isLoggedIn]);
+
+  const normalizeQuizForDisplay = (quiz) => ({
+    ...quiz,
+    id: quiz.id ?? 0,
+    questions: (quiz.questions || []).map((question, questionIndex) => ({
+      ...question,
+      id: question.id ?? questionIndex + 1,
+      options: (question.options || []).map((option, optionIndex) => ({
+        ...option,
+        id: option.id ?? questionIndex * 100 + optionIndex + 1,
+      })),
+    })),
+  });
 
   // Handles file upload
   const handleFileChange = (e) => {
@@ -51,14 +65,15 @@ function QuizbotGeneratorCard({ onQuizGenerated, isLoggedIn }) {
     }
 
     const token = localStorage.getItem('jwtToken');
-    
-    // Guest limit logic
-    if (!token) {
-      const guestCount = parseInt(localStorage.getItem('guestQuizCount') || '0');
-      if (guestCount >= 2) {
-        alert('Guest limit reached (2 quizzes). Please register to continue for free!');
-        return;
-      }
+
+    if (token && creditsSummary?.mode === 'authenticated' && !creditsSummary.canGenerate) {
+      alert('You do not have enough credits to generate another quiz.');
+      return;
+    }
+
+    if (!token && creditsSummary?.mode === 'guest' && !creditsSummary.canGenerate) {
+      alert('Guest daily limit reached. Please register or try again tomorrow.');
+      return;
     }
 
     try {
@@ -80,6 +95,8 @@ function QuizbotGeneratorCard({ onQuizGenerated, isLoggedIn }) {
       };
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
+      } else {
+        headers['X-Guest-Id'] = getOrCreateGuestId();
       }
 
       const response = await fetch(endpoint, {
@@ -93,20 +110,17 @@ function QuizbotGeneratorCard({ onQuizGenerated, isLoggedIn }) {
 
       if (!response.ok) {
         const data = await response.json();
-        alert(data.message || 'Generation failed.');
+        const errorMessage = Array.isArray(data.message)
+          ? data.message.join(', ')
+          : data.message || 'Generation failed.';
+        alert(errorMessage);
         return;
       }
 
       const quiz = await response.json();
       console.log('Quiz generated:', quiz);
 
-      // Increment guest count if not logged in
-      if (!token) {
-        const guestCount = parseInt(localStorage.getItem('guestQuizCount') || '0');
-        localStorage.setItem('guestQuizCount', (guestCount + 1).toString());
-      }
-
-      if (onQuizGenerated) onQuizGenerated(quiz);
+      if (onQuizGenerated) onQuizGenerated(normalizeQuizForDisplay(quiz));
     } catch (err) {
       console.error('Generation Error:', err);
       alert('Error: ' + err.message);
