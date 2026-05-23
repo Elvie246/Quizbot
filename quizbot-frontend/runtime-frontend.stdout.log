@@ -15,3 +15,30 @@ Note that the development build is not optimized.
 To create a production build, use npm run build.
 
 webpack compiled [1m[32msuccessfully[39m[22m
+Failed to compile.
+
+Module not found: Error: Can't resolve './guestSession' in 'C:\Users\benym\Documents\Bot\Quizbot\quizbot-frontend\src'
+[1m[31mERROR[39m[22m in [1m./src/App.js[39m[22m [1m[32m32:0-52[39m[22m
+[1mModule [1m[31mnot found[39m[22m[1m: [1m[31mError[39m[22m[1m: Can't resolve './guestSession' in 'C:\Users\benym\Documents\Bot\Quizbot\quizbot-frontend\src'[39m[22m
+
+[1m[31mERROR[39m[22m in [1m./src/QuizbotGeneratorCard.js[39m[22m [1m[32m11:0-52[39m[22m
+[1mModule [1m[31mnot found[39m[22m[1m: [1m[31mError[39m[22m[1m: Can't resolve './guestSession' in 'C:\Users\benym\Documents\Bot\Quizbot\quizbot-frontend\src'[39m[22m
+
+webpack compiled with [1m[31m2 errors[39m[22m
+Compiling...
+Compiled successfully!
+webpack compiled [1m[32msuccessfully[39m[22m
+Compiling...
+Failed to compile.
+
+Module not found: Error: Can't resolve './guestSession' in 'C:\Users\benym\Documents\Bot\Quizbot\quizbot-frontend\src'
+[1m[31mERROR[39m[22m in [1m./src/App.js[39m[22m [1m[32m32:0-52[39m[22m
+[1mModule [1m[31mnot found[39m[22m[1m: [1m[31mError[39m[22m[1m: Can't resolve './guestSession' in 'C:\Users\benym\Documents\Bot\Quizbot\quizbot-frontend\src'[39m[22m
+
+[1m[31mERROR[39m[22m in [1m./src/QuizbotGeneratorCard.js[39m[22m [1m[32m11:0-52[39m[22m
+[1mModule [1m[31mnot found[39m[22m[1m: [1m[31mError[39m[22m[1m: Can't resolve './guestSession' in 'C:\Users\benym\Documents\Bot\Quizbot\quizbot-frontend\src'[39m[22m
+
+webpack compiled with [1m[31m2 errors[39m[22m
+Compiling...
+Compiled successfully!
+webpack compiled [1m[32msuccessfully[39m[22m
